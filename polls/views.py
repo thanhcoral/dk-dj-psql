@@ -1,15 +1,26 @@
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 from polls.forms import PatientForm
 from polls.models import Patient
 
 # Create your views here.
 def home(request):
-    patients = Patient.objects.all()
+    data = Patient.objects.all()
+    ###
+    if 'q' in request.GET:
+        q=request.GET['q']
+        data=Patient.objects.filter(Q(full_name__icontains=q)|Q(phone__icontains=q))
+    ###
+    paginator=Paginator(data,2)
+    page_number=request.GET.get('page',1)
+    data=paginator.get_page(page_number)
+    ###
     context = {
-        'data': patients
+        'data': data
     }
     return render(request, 'home.html', context)
 
