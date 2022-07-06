@@ -1,7 +1,8 @@
 from django.shortcuts import redirect, render
 from django.contrib import messages
-from polls.forms import PatientForm
+from django.core.mail import send_mail
 
+from polls.forms import PatientForm
 from polls.models import Patient
 
 # Create your views here.
@@ -37,4 +38,16 @@ def updatePatient(request, id):
 
 def deletePatient(request, id):
     Patient.objects.filter(id=id).delete()
+    return redirect('/')
+
+def sendEmail(request,id):
+    patient=Patient.objects.get(id=id) 
+    send_mail(
+        'Next Visit Reminder',
+        'Your next visit is on '+ str(patient.visit_date),
+        'admin@example.com',
+        [patient.full_name],
+        fail_silently=False,
+    )
+    messages.success(request,'Mail has been sent.')
     return redirect('/')
